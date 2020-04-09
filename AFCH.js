@@ -12,34 +12,36 @@ var tests = [];
 
 var ajax = function (title) {
 	return $.ajax({
-		url: 'https://zh.wikipedia.org/w/index.php?title=' + title + '&action=raw&ctype=text/javascript',
+		url: 'https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/' + title + '&action=raw&ctype=text/javascript',
 		dataType: 'text'
 	});
 };
 
 var load = function (p) {
 	var done = function (data) {
-		if (rebuildcache || !localStorage['A64Twinkle_' + p.name]) {
-			localStorage['A64Twinkle_' + p.name] = data;
+		if (rebuildcache || !localStorage['AFCHFTW_' + p.name]) {
+			localStorage['AFCHFTW_' + p.name] = data;
 		}
 	};
-	if (localStorage['A64Twinkle_' + p.name] && !rebuildcache) {
-		return $.Deferred().resolve(localStorage['A64Twinkle_' + p.name]);
+	if (localStorage['AFCHFTW_' + p.name] && !rebuildcache) {
+		return $.Deferred().resolve(localStorage['AFCHFTW_' + p.name]);
 	}
 	if (p.test) {
 		return ajax(PREFIX + p.name).done(done);
+	} else
+		//fail
 	}
-	return ajax('MediaWiki:Gadget-' + p.name).done(done);
 };
 
 var message = function (text) {
-	console.log('[A64Twinkle]', text); // eslint-disable-line no-console
+	console.log('[AFCHFTW]', text); // eslint-disable-line no-console
 //    $('#simpleSearch input[type="search"]').attr('placeHolder', text);
 };
 
-tests.push({ name: 'morebits.js', test: true });
-tests.push({ name: 'twinkle.js', test: true });
-tests.push({ name: 'select2.min.js', test: true });
+tests.push({ name: 'module.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/morebits.js - morebits.js
+tests.push({ name: 'main.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/twinkle.js - twinkle.js
+tests.push({ name: 'select2.min.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/select2.min.js - select2.min.js
+/**
 tests.push({ name: 'modules/twinklearv.js', test: true });
 tests.push({ name: 'modules/twinklewarn.js', test: true });
 tests.push({ name: 'modules/friendlyshared.js', test: true });
@@ -56,27 +58,30 @@ tests.push({ name: 'modules/twinklediff.js', test: true });
 tests.push({ name: 'modules/twinklefluff.js', test: true });
 tests.push({ name: 'modules/twinkleimage.js', test: true });
 tests.push({ name: 'modules/twinkleprotect.js', test: true });
-tests.push({ name: 'modules/twinklespeedy.js', test: true });
+**/
+tests.push({ name: 'modules/twinklespeedy.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/modules/twinklespeedy.js - modules/twinklespeedy.js
+/**
 tests.push({ name: 'modules/twinklestub.js', test: true });
 tests.push({ name: 'modules/twinkleunlink.js', test: true });
 tests.push({ name: 'modules/twinklexfd.js', test: true });
+**/
 
 mw.loader.using(['mediawiki.user', 'mediawiki.util', 'mediawiki.notify', 'mediawiki.Title', 'jquery.ui', 'jquery.tipsy', 'jquery.chosen']).done(function () {
-	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Xiplus/Twinkle/morebits.css&action=raw&ctype=text/css', 'text/css');
-	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Xiplus/Twinkle/select2.min.css&action=raw&ctype=text/css', 'text/css');
-	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Xiplus/Twinkle/twinkle.css&action=raw&ctype=text/css', 'text/css');
+	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/module.css&action=raw&ctype=text/css', 'text/css'); // https://github.com/Xi-Plus/twinkle/blob/master/morebits.css - morebits.css
+	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/select2.min.css&action=raw&ctype=text/css', 'text/css'); // https://github.com/Xi-Plus/twinkle/blob/master/select2.min.css - select2.min.css
+	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/main.css&action=raw&ctype=text/css', 'text/css'); // https://github.com/Xi-Plus/twinkle/blob/master/twinkle.css - twinkle.css
 
 	var i = 0;
 	// var finished = 0;
 	var code = [];
 
 	// all
-	message('Loading A64TW...');
+	message('Loading AFCHFTW...');
 	var promises = [];
 	var done = function (x) {
 		return function (data) {
 			// finished++;
-			// message('Loading A64TW... (' + finished + '/' + tests.length + ')');
+			// message('Loading AFCHFTW... (' + finished + '/' + tests.length + ')');
 			code[x] = data;
 		};
 	};
@@ -84,12 +89,12 @@ mw.loader.using(['mediawiki.user', 'mediawiki.util', 'mediawiki.notify', 'mediaw
 		promises.push(load(tests[i]).done(done(i)));
 	}
 	$.when.apply($, promises).done(function () {
-		localStorage.A64Twinkle_version = VERSION;
+		localStorage.AFCHFTW_version = VERSION;
 		eval(code.join('\n;\n'));
-		message('Twinkle Done');
-		if ($('#twinkle-config-titlebar').length) {
-			$('#twinkle-config-titlebar').append('--版本：Xiplus ' + localStorage.A64Twinkle_version);
-			$('#twinkle-config-titlebar').append('<button onclick="localStorage.A64Twinkle_version = \'\';location.reload();">清除快取</button>');
+		message('AFCHFTW Done');
+		if ($('#afch-config-titlebar').length) {
+			$('#twinkle-config-titlebar').append('--版本：AFCHFTW ' + localStorage.AFCHFTW_version);
+			$('#twinkle-config-titlebar').append('<button onclick="localStorage.AFCHFTW_version = \'\';location.reload();">清除快取</button>');
 		}
 	});
 });
