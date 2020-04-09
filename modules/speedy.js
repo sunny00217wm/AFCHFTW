@@ -10,6 +10,7 @@
 
 /**
  * need:
+ ** AFCH.test.IsActionActions => action = view && mw.config.get('wgRevisionId') == mw.config.get('wgCurRevisionId')
  ** AFCH.test.IsInAFCPage('CSD') => ns0 ns2 ns118
  ** AFCH.test.IsJoinUser => 在[[Wikipedia:建立條目專題/參與者]]中
  **/
