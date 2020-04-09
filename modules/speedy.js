@@ -14,7 +14,7 @@
  ** AFCH.test.IsInAFCPage('CSD') => ns0 ns2 ns118
  ** AFCH.test.IsJoinUser => 在[[Wikipedia:建立條目專題/參與者]]中
  **/
-
+/**
 window.wgUXS = function (wg, zh, hans, hant, cn, tw, hk, sg, mo, my) {
     var ret = {
         'zh': zh || hans || hant || cn || tw || hk || sg || mo || my,
@@ -36,8 +36,8 @@ window.wgULS = function (hans, hant, cn, tw, hk, sg, mo, my) {
 window.wgULS_U = function (hans, hant, tw) {
     return wgUXS(mw.config.get('wgUserLanguage'), hans, hant, hans, tw, hant, hans, hant, hant, hans);
 };
+**/
 
-//Morebits.userIsSysop
 (function($) {
 
 AFCH.speedy = function speedy() {
@@ -45,7 +45,7 @@ AFCH.speedy = function speedy() {
 	// * special pages
 	// * Flow pages
 	// * non-existent pages
-	if (AFCH.test.IsInAFCPage('CSD')||AFCH.test.IsJoinUser) {
+	if (AFCH.test('speedy') == 0) {
 		return;
 	}
 
