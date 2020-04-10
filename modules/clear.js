@@ -21,7 +21,7 @@ AFCH.clear.callback = function (){
 
   var text = AFCH.getPageText();
   if (text) {
-    text = AFCH.clear(text);
+    text = AFCH.toclear(text);
     if (text == pageobj.getPageText()) {
       statelem.error(wgULS('清理结果前后相同，未更改。', '清理結果前後相同，未變更。'));
       return;
