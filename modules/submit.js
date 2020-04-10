@@ -5,7 +5,7 @@ AFCH.submit = function submit() {
 		return;
 	}
 
-	AFCH.addPortletLink(AFCH.submit.callback, wgULS('提交草稿', '提交草稿'), 'afch-clear', wgULS('快速提交草稿', '快速提交草稿'));
+	AFCH.addPortletLink(AFCH.submit.callback, AFCH.NameOfModule('submit'), 'afch-clear', wgULS('快速提交草稿', '快速提交草稿'));
 };
   
 AFCH.submit.callback = function submitCallback() {
