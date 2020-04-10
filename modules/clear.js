@@ -5,12 +5,12 @@ AFCH.clear = function speedy() {
 		return;
 	}
 
-	AFCH.addPortletLink(AFCH.clear.callback, wgULS('维护清理', '維護清理'), 'afch-clear', wgULS('进行维护清理', '進行維護清理'));
+	AFCH.addPortletLink(AFCH.clear.callback, AFCH.NameOfModule('clear'), 'afch-clear', wgULS('进行维护清理', '進行維護清理'));
 };
   
 AFCH.clear.callback = function (){
   var dialog;
-  AFCH.clear.dialog = new Morebits.simpleWindow(AFCH.getPref('speedyWindowWidth'), AFCH.getPref('speedyWindowHeight'));
+  AFCH.clear.dialog = new Morebits.simpleWindow();
   dialog = AFCH.clear.dialog;
   dialog.setTitle(wgULS('进行维护清理', '進行維護清理'));
   dialog.setScriptName('AFCH');
@@ -19,7 +19,7 @@ AFCH.clear.callback = function (){
   
   statelem.status(wgULS('检查页面是否需更改...', '檢查頁面是否需變更...'));
 
-  var text = pageobj.getPageText();
+  var text = AFCH.getPageText();
   if (text) {
     text = AFCH.clear(text);
     if (text == pageobj.getPageText()) {
