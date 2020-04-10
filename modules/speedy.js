@@ -8,13 +8,6 @@
  * 僅包含草稿可以快速刪除的選項
  * 部分值若未偵測到設定則自動調用Twinkle設定
  **/
-
-/**
- * need:
- ** AFCH.test.IsActionActions => action = view && mw.config.get('wgRevisionId') == mw.config.get('wgCurRevisionId')
- ** AFCH.test.IsInAFCPage('CSD') => ns0 ns2 ns118
- ** AFCH.test.IsJoinUser => 在[[Wikipedia:建立條目專題/參與者]]中
- **/
 (function($) {
 
 AFCH.speedy = function speedy() {
@@ -28,7 +21,8 @@ AFCH.speedy = function speedy() {
 // This function is run when the CSD tab/header link is clicked
 AFCH.speedy.callback = function speedyCallback() {
 	if (AFCH.LoadFromTW['speedymodule']){
-		Twinkle.speedy.callback()
+		mw.notify('Try to call speedy module of TW ......');
+		Twinkle.speedy.callback();
 		return;
 	}
 	AFCH.speedy.initDialog(AFCH.speedy.callback.evaluateUser, true);
