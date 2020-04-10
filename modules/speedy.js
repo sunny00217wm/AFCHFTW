@@ -2,9 +2,10 @@
 /**
  * 改自 https://github.com/Xi-Plus/twinkle/blob/9aff20e2388e9bea15aea7a8e02d3a37d36dd871/modules/speedy.js
  * 此版為方便使用
+ * 若調的到TW的速刪模組則直接調
  * 不支援刪除
  * 要刪除請用TW
- * 僅包含草稿可以快速刪除的選項及G8（當移動到的目標頁是重定向／侵權時標記做快速刪除）
+ * 僅包含草稿可以快速刪除的選項
  * 部分值若未偵測到設定則自動調用Twinkle設定
  **/
 
@@ -14,37 +15,9 @@
  ** AFCH.test.IsInAFCPage('CSD') => ns0 ns2 ns118
  ** AFCH.test.IsJoinUser => 在[[Wikipedia:建立條目專題/參與者]]中
  **/
-/**
-window.wgUXS = function (wg, zh, hans, hant, cn, tw, hk, sg, mo, my) {
-    var ret = {
-        'zh': zh || hans || hant || cn || tw || hk || sg || mo || my,
-        'zh-hans': hans || cn || sg || my,
-        'zh-hant': hant || tw || hk || mo,
-        'zh-cn': cn || hans || sg || my,
-        'zh-sg': sg || hans || cn || my,
-        'zh-tw': tw || hant || hk || mo,
-        'zh-hk': hk || hant || mo || tw,
-        'zh-mo': mo || hant || hk || tw
-    }
-    return ret[wg] || zh || hans || hant || cn || tw || hk || sg || mo || my; //保證每一語言有值
-}
-
-window.wgULS = function (hans, hant, cn, tw, hk, sg, mo, my) {
-    return wgUXS(mw.config.get('wgUserLanguage'), hant, hans, hant, cn, tw, hk, sg, mo, my);
-};
-
-window.wgULS_U = function (hans, hant, tw) {
-    return wgUXS(mw.config.get('wgUserLanguage'), hans, hant, hans, tw, hant, hans, hant, hant, hans);
-};
-**/
-
 (function($) {
 
 AFCH.speedy = function speedy() {
-	// Disable on:
-	// * special pages
-	// * Flow pages
-	// * non-existent pages
 	if (AFCH.test('speedy') == 0) {
 		return;
 	}
@@ -54,6 +27,10 @@ AFCH.speedy = function speedy() {
 
 // This function is run when the CSD tab/header link is clicked
 AFCH.speedy.callback = function speedyCallback() {
+	if (AFCH.LoadFromTW['speedymodule']){
+		Twinkle.speedy.callback()
+		return;
+	}
 	AFCH.speedy.initDialog(AFCH.speedy.callback.evaluateUser, true);
 };
 
@@ -207,11 +184,6 @@ AFCH.speedy.callback.modeChanged = function speedyCallbackModeChanged(form) {
 	}
 
 	switch (namespace) {
-		case 0:  // article
-			work_area.append({ type: 'header', label: wgULS('条目', '條目') });
-			work_area.append({ type: radioOrCheckbox, name: 'csd', list: AFCH.speedy.generateCsdList(AFCH.speedy.articleList, mode) });
-			break;
-
 		case 2:  // user
 			work_area.append({ type: 'header', label: wgULS_U('用户页', '用戶頁', '使用者頁面') });
 			work_area.append({ type: radioOrCheckbox, name: 'csd', list: AFCH.speedy.generateCsdList(AFCH.speedy.userList, mode) });
@@ -333,20 +305,6 @@ AFCH.speedy.customRationale = [
 			size: 60
 		}
 		// hideWhenMultiple: true
-	}
-];
-AFCH.speedy.articleList = [
-	{
-		label: wgULS('G8: 因技术原因删除页面。', 'G8: 因技術原因刪除頁面。'),
-		value: 'g8',
-		tooltip: wgULS('本功能仅用于因移动请求而删除页面，若要使用其他理由请用AFCH的自订理由。', '本功能僅用於因移動請求而刪除頁面，若要使用其他理由請用AFCH的自訂理由。'),
-		subgroup: {
-			name: 'g8_pagename',
-			type: 'input',
-			label: wgULS('现有草稿名：', '現有草稿名：'),
-			tooltip: wgULS('草稿目标，需页面名称繁简相同，否则请自行加上[[]]。', '草稿目標，需頁面名稱繁簡相同，否則請自行加上[[]]。'),
-			size: 60
-		}
 	}
 ];
 AFCH.speedy.draftList = [
@@ -513,7 +471,6 @@ AFCH.speedy.normalizeHash = {
 	'g2': 'g2',
 	'g3': 'g3',
 	'g5': 'g5',
-	'g8': '因移動請求而刪除頁面。（[[WP:CSD#G8|CSD G8]]）',
 	'g10': 'g10',
 	'g11': 'g11',
 	'g12': 'g12',
@@ -832,17 +789,6 @@ AFCH.speedy.getParameters = function speedyGetParameters(form, values) {
 				}
 				break;
 
-			case 'g8':
-				if (form['csd.g8_pagename']) {
-					var draft_page = form['csd.g8_pagename'].value;
-					if (!draft_page || !draft_page.trim()) {
-						alert(wgULS('CSD G8：请提供现有草稿的名称。\n提示：本功能仅用于因移动请求而删除页面，若要使用其他理由请用AFCH的自订理由。', 'CSD G8：請提供現有草稿的名稱。\n提示：本功能僅用於因移動請求而刪除頁面，若要使用其他理由請用AFCH的自訂理由。'));
-						parameters = null;
-						return false;
-					}
-					currentParams.pagename = draft_page;
-				}
-				break;
 			case 'g5':
 				if (form['csd.g5_1']) {
 					var deldisc = form['csd.g5_1'].value;
