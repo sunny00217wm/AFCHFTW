@@ -1,6 +1,6 @@
 (function($) {
 
-AFCH.speedy = function speedy() {
+AFCH.clear = function speedy() {
 	if (AFCH.test('clear') == 0) {
 		return;
 	}
