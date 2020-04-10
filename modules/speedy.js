@@ -15,7 +15,7 @@ AFCH.speedy = function speedy() {
 		return;
 	}
 
-	AFCH.addPortletLink(AFCH.speedy.callback, wgULS('速删', '速刪'), 'afch-csd', wgULS('请求快速删除', '請求快速刪除'));
+	AFCH.addPortletLink(AFCH.speedy.callback, AFCH.NameOfModule('speedy'), 'afch-csd', wgULS('请求快速删除', '請求快速刪除'));
 };
 
 // This function is run when the CSD tab/header link is clicked
