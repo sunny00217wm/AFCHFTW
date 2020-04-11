@@ -6,13 +6,21 @@
 (function () {
 
 var VERSION = '{{subst:#time:YmdHis}}';
-var PREFIX = 'User:Sunny00217/AFCH/';
+/**{{subst:void|**/ //}}
+var PREFIX = 'sunny00217wm/AFCHFTW/zhwp/'; // perfix on github {{subst:void|
+/**}}
+**{{subst:void}}/
+var PREFIX = 'User:Sunny00217/AFCH/';{{subst:void|**/ //}}
 var rebuildcache = localStorage.AFCHFTW_version !== VERSION;
 var tests = [];
 
 var ajax = function (title) {
 	return $.ajax({
-		url: 'https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/' + title + '&action=raw&ctype=text/javascript',
+		/**{{subst:void|**/ //}}
+		url: 'https://raw.githubusercontent.com/' + title , // source url on github {{subst:void|
+		/**}}
+		**{{subst:void}}/
+		url: 'https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/' + title + '&action=raw&ctype=text/javascript',{{subst:void|**/ //}}
 		dataType: 'text'
 	});
 };
@@ -38,9 +46,10 @@ var message = function (text) {
 //    $('#simpleSearch input[type="search"]').attr('placeHolder', text);
 };
 
-tests.push({ name: 'module.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/morebits.js - morebits.js
-tests.push({ name: 'main.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/twinkle.js - twinkle.js
+tests.push({ name: 'morebits.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/morebits.js - morebits.js
+tests.push({ name: 'afch.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/twinkle.js - twinkle.js
 tests.push({ name: 'select2.min.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/select2.min.js - select2.min.js
+tests.push({ name: 'modules/afch-config.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/modules/twinkleconfig.js - modules/twinkleconfig.js
 /**
 tests.push({ name: 'modules/twinklearv.js', test: true });
 tests.push({ name: 'modules/twinklewarn.js', test: true });
@@ -51,25 +60,35 @@ tests.push({ name: 'modules/twinklebatchdelete.js', test: true });
 tests.push({ name: 'modules/twinklebatchundelete.js', test: true });
 tests.push({ name: 'modules/twinkleblock.js', test: true });
 tests.push({ name: 'modules/twinkleclose.js', test: true });
-tests.push({ name: 'modules/twinkleconfig.js', test: true });
+
 tests.push({ name: 'modules/twinklecopyvio.js', test: true });
 tests.push({ name: 'modules/twinkledelimages.js', test: true });
 tests.push({ name: 'modules/twinklediff.js', test: true });
 tests.push({ name: 'modules/twinklefluff.js', test: true });
 tests.push({ name: 'modules/twinkleimage.js', test: true });
 tests.push({ name: 'modules/twinkleprotect.js', test: true });
-**/
-tests.push({ name: 'modules/twinklespeedy.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/modules/twinklespeedy.js - modules/twinklespeedy.js
-/**
 tests.push({ name: 'modules/twinklestub.js', test: true });
 tests.push({ name: 'modules/twinkleunlink.js', test: true });
 tests.push({ name: 'modules/twinklexfd.js', test: true });
 **/
+	
+tests.push({ name: 'modules/afch-submit.js', test: true }); 
+	
+tests.push({ name: 'modules/afch-clear.js', test: true }); 
+	
+tests.push({ name: 'modules/afch-speedy.js', test: true }); // https://github.com/Xi-Plus/twinkle/blob/master/modules/twinklespeedy.js - modules/twinklespeedy.js
 
 mw.loader.using(['mediawiki.user', 'mediawiki.util', 'mediawiki.notify', 'mediawiki.Title', 'jquery.ui', 'jquery.tipsy', 'jquery.chosen']).done(function () {
-	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/module.css&action=raw&ctype=text/css', 'text/css'); // https://github.com/Xi-Plus/twinkle/blob/master/morebits.css - morebits.css
-	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/select2.min.css&action=raw&ctype=text/css', 'text/css'); // https://github.com/Xi-Plus/twinkle/blob/master/select2.min.css - select2.min.css
-	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/main.css&action=raw&ctype=text/css', 'text/css'); // https://github.com/Xi-Plus/twinkle/blob/master/twinkle.css - twinkle.css
+	/**{{subst:void|**/ //}}
+	mw.loader.load('https://raw.githubusercontent.com/sunny00217wm/AFCHFTW/zhwp/module.css&action=raw&ctype=text/css', 'text/css'); // https://github.com/Xi-Plus/twinkle/blob/master/morebits.css - morebits.css
+	mw.loader.load('https://raw.githubusercontent.com/sunny00217wm/AFCHFTW/zhwp/select2.min.css&action=raw&ctype=text/css', 'text/css'); // https://github.com/Xi-Plus/twinkle/blob/master/select2.min.css - select2.min.css
+	mw.loader.load('https://raw.githubusercontent.com/sunny00217wm/AFCHFTW/zhwp/main.css&action=raw&ctype=text/css', 'text/css'); // https://github.com/Xi-Plus/twinkle/blob/master/twinkle.css - twinkle.css
+	// use on github {{subst:void|
+	/**}}
+	**{{subst:void}}/
+	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/module.css&action=raw&ctype=text/css', 'text/css'); 
+	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/select2.min.css&action=raw&ctype=text/css', 'text/css'); 
+	mw.loader.load('https://zh.wikipedia.org/w/index.php?title=User:Sunny00217/AFCH/main.css&action=raw&ctype=text/css', 'text/css'); {{subst:void|**/ //}}
 
 	var i = 0;
 	// var finished = 0;
