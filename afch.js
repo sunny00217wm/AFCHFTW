@@ -31,6 +31,19 @@ if (!Morebits.userIsInGroup('autoconfirmed') && !Morebits.userIsInGroup('confirm
 var AFCH = {};
 
 window.AFCH = AFCH;
+
+AFCH.LoadFromTW = {};
+
+AFCH.LoadFromTWTest =  function TestLoadTW(module, modulename) {
+	if (Twinkle[module] !== undefined){
+		AFCH.LoadFromTW[module] = true
+	}
+	AFCH.LoadFromTW[module] = false
+};
+
+AFCH.LoadFromTWTest(Twinkle.getPref, 'getPref')
+AFCH.LoadFromTWTest(Twinkle.getPref['configPage'], 'ConfigPageOfTW')
+AFCH.LoadFromTWTest(Twinkle.speedy.callback, 'speedymodule')
 	
 AFCH.defaultConfig = {};
 
@@ -76,167 +89,6 @@ AFCH.defaultConfig = {
 	sandboxPage: 'Wikipedia:沙盒',
 };
 	
-//https://github.com/WPAFC/afch-rewrite/blob/0594efad9d5337f6c1418509ad55e9fc3210fca1/src/modules/core.js#L513
-AFCH.getPageText = function (pagename) {
-	new mw.Api().get({
-		action: 'query',
-		prop: 'revisions',
-		format: 'json',
-		indexpageids: true,
-		titles: (pagename || mw.config.get('wgPageName'))
-	})
-		.done( function ( data ) {
-			var rev, id = data.query.pageids[ 0 ];
-			if ( id && data.query.pages ) {
-				// The page might not exist; resolve with an empty string
-				if ( id === '-1' ) {
-					console.error(`AFCH error:Title "${ pagename }" might not exist.
-[type = AFCH.getPageText,
-code = new mw.Api().get({
-		action: 'query',
-		prop: 'revisions',
-		format: 'json',
-		indexpageids: true,
-		titles: '${ pagename }'
-})
-]`);
-				}
-				
-				rev = data.query.pages[ id ].revisions[ 0 ];
-				var text =  rev[ '*' ];
-			} else if (data.error.info) {
-				console.error(`AFCH error:Get a error which is "${ data.error.info }" while AFCH getting title "${ pagename }".
-[type = AFCH.getPageText,
-code = new mw.Api().get({
-		action: 'query',
-		prop: 'revisions',
-		format: 'json',
-		indexpageids: true,
-		titles: '${ pagename }'
-})
-]`);
-			} else {
-				console.error( 'AFCH error: Get unknow error(While getting ' + pagename + ')');
-				console.error(`AFCH error:Get a unknow error while AFCH getting title "${ pagename }".
-[type = AFCH.getPageText,
-code = new mw.Api().get({
-		action: 'query',
-		prop: 'revisions',
-		format: 'json',
-		indexpageids: true,
-		titles: '${ pagename }'
-})
-]`);
-			}
-		} )
-		.fail( function ( err ) {
-			console.error(`AFCH error:Get a error which is "${ err }" while AFCH getting title "${ pagename }".
-[type = AFCH.getPageText,
-code = new mw.Api().get({
-		action: 'query',
-		prop: 'revisions',
-		format: 'json',
-		indexpageids: true,
-		titles: '${ pagename }'
-})
-]`);
-		} );
-
-		if (text){
-			return text
-		} else {
-			return null
-		}
-};
-	
-AFCH.getPageHtml = function (pagename) {
-	new mw.Api().get({
-		action: 'parse',
-		format: 'json',
-		titles: (pagename || mw.config.get('wgPageName')),
-		prop: 'text|parsewarnings',
-		wrapoutputclass: '',
-		pst: '1',
-		disablelimitreport: '1',
-		disableeditsection: '1',
-		disabletoc: '1'
-	})
-		.done( function ( data ) {
-			var rev, id = data.parse.pageids[ 0 ];
-			if ( id ) {
-				// The page might not exist; resolve with an empty string
-				if ( id === '-1' ) {
-					console.error(`AFCH error:Title "${ pagename }" might not exist.
-[type = AFCH.getPageHtml,
-code = new mw.Api().get({
-	action: 'parse',
-	format: 'json',
-	titles: ${ pagename },
-	prop: 'text|parsewarnings',
-	wrapoutputclass: '',
-	pst: '1',
-	disablelimitreport: '1',
-	disableeditsection: '1',
-	disabletoc: '1'
-})
-]`);
-				}
-				var text =  data.parse.text;
-			} else if (data.parsewarnings[0]) {
-				console.error(`AFCH error:Get a error which is "${ data.parsewarnings[0] }" while AFCH getting title "${ pagename }" html.
-[type = AFCH.getPageHtml,
-code = new mw.Api().get({
-	action: 'parse',
-	format: 'json',
-	titles: ${ pagename },
-	prop: 'text|parsewarnings',
-	wrapoutputclass: '',
-	pst: '1',
-	disablelimitreport: '1',
-	disableeditsection: '1',
-	disabletoc: '1'
-})
-]`);
-			} else {
-console.error(`AFCH error:Get a unknow error while AFCH getting title "${ pagename }" html.
-[type = AFCH.getPageHtml,
-code = new mw.Api().get({
-	action: 'parse',
-	format: 'json',
-	titles: ${ pagename },
-	prop: 'text|parsewarnings',
-	wrapoutputclass: '',
-	pst: '1',
-	disablelimitreport: '1',
-	disableeditsection: '1',
-	disabletoc: '1'
-})
-]`);
-			}
-		} )
-		.fail( function ( err ) {
-		console.error(`AFCH error:Get a error which is "${ err }" while AFCH getting title "${ pagename }" html.
-[type = AFCH.getPageHtml,
-code = new mw.Api().get({
-	action: 'parse',
-	format: 'json',
-	titles: ${ pagename },
-	prop: 'text|parsewarnings',
-	wrapoutputclass: '',
-	pst: '1',
-	disablelimitreport: '1',
-	disableeditsection: '1',
-	disabletoc: '1'
-})
-]`);
-		} );
-		if (text){
-			return text
-		} else {
-			return null
-		}
-};
-	
 AFCH.getPref = function twinkleGetPref(name) {
 	//要是可以讀到TW的ConfigPage就直接回傳
 	if (name == 'ConfigPageOfTW') {
@@ -266,32 +118,12 @@ AFCH.getPref = function twinkleGetPref(name) {
 	return AFCH.defaultConfig[name];
 };
 	
-AFCH.LoadFromTW = {};
-
-AFCH.LoadFromTWTest =  function TestLoadTW(module, modulename) {
-	if (Twinkle[module] !== undefined){
-		AFCH.LoadFromTW[module] = true
-	}
-	AFCH.LoadFromTW[module] = false
-};
-
-AFCH.LoadFromTWTest(Twinkle.getPref, 'getPref')
-AFCH.LoadFromTWTest(Twinkle.getPref['configPage'], 'ConfigPageOfTW')
-AFCH.LoadFromTWTest(Twinkle.speedy.callback, 'speedymodule')
+var afchModules = [
+	'clear',
+	//附帶功能：速刪
+	'speedy',
+];
 	
-AFCH.makeLinkElementToPage = function ( pagename, displayTitle, newTab ) {
-	var actualTitle = pagename.replace( /_/g, ' ' );
-
-	newTab = ( typeof newTab === 'undefined' ) ? true : newTab;
-
-	return $( '<a>' )
-		.attr( 'href', mw.util.getUrl( actualTitle ) )
-		.attr( 'id', 'afch-cat-link-' + pagename.toLowerCase().replace( / /g, '-' ).replace( /\//g, '-' ) )
-		.attr( 'title', actualTitle )
-		.text( displayTitle || actualTitle )
-		.attr( 'target', newTab ? '_blank' : '_self' );
-}
-
 AFCH.NameOfModule = function (module) {
 	switch (module) {
 		case 'clear' :
@@ -304,6 +136,34 @@ AFCH.NameOfModule = function (module) {
 			return wgULS('提交草稿', '提交草稿');
 			break;
 	}
+}
+	
+AFCH.test = function (module) {
+	var test = AFCH.tests
+	switch (module) {
+		case 'clear' :
+			return (test.IsActionActions && test.IsDraft && AFCH.tests.IsJoinUser && AFCH.tests.findAFCTemplate);
+			break;
+		case 'speedy' :
+			return (test.IsActionActions && test.IsDraft && AFCH.tests.IsJoinUser);
+			break;
+		case 'submit' :
+			return (test.IsActionActions && test.IsDraft && !AFCH.tests.findAFCTemplate);
+			break;
+	}
+}
+	
+AFCH.makeLinkElementToPage = function ( pagename, displayTitle, newTab ) {
+	var actualTitle = pagename.replace( /_/g, ' ' );
+
+	newTab = ( typeof newTab === 'undefined' ) ? true : newTab;
+
+	return $( '<a>' )
+		.attr( 'href', mw.util.getUrl( actualTitle ) )
+		.attr( 'id', 'afch-cat-link-' + pagename.toLowerCase().replace( / /g, '-' ).replace( /\//g, '-' ) )
+		.attr( 'title', actualTitle )
+		.text( displayTitle || actualTitle )
+		.attr( 'target', newTab ? '_blank' : '_self' );
 }
 	
 AFCH.norighterror = function (module) {
@@ -330,7 +190,7 @@ AFCH.norighterror = function (module) {
 }
 
 AFCH.tests = {}
-	
+
 AFCH.tests.IsActionActions = function () {
 	if (mw.config.get('wgAction') == 'view' && mw.config.get('wgArticleId') && mw.config.get('wgRevisionId') == mw.config.get('wgCurRevisionId')){
 		return true;
@@ -353,24 +213,167 @@ AFCH.tests.IsJoinUser = function (module) {
 		return false;
 	}
 	
-	var find_user = text.match( new RegExp( `<a href="\\/wiki\\/(User:|User_talk:|Special:%E7%94%A8%E6%88%B7%E8%B4%A1%E7%8C%AE\\/)${ mw.util.wikiUrlencode(mw.config.get('wgUserName')) }"`, 'gi' ) )
+	var find_user = html.match( new RegExp( `<a href="\\/wiki\\/(User:|User_talk:|Special:%E7%94%A8%E6%88%B7%E8%B4%A1%E7%8C%AE\\/)${ mw.util.wikiUrlencode(mw.config.get('wgUserName')) }"`, 'gi' ) )
 	if (find_user){
 		return true;
 	}
 	return false;
 }
 	
-AFCH.test = function (module) {
-	var test = AFCH.tests
-	switch (module) {
-		case 'clear' :
-		case 'speedy' :
-			return (test.IsActionActions && test.IsDraft && AFCH.tests.IsJoinUser);
-			break;
-		case 'submit' :
-			return (test.IsActionActions && test.IsDraft);
-			break;
+AFCH.tests.findAFCNewTemplate = function (module) {
+	if (!AFCH.tests.IsDraft) {
+		return;
 	}
+	var html = AFCH.getPageHtml(mw.config.get('wgPageName'));
+	if (!html) {
+		console.info( 'AFCH error: Could\'n get html from "' + mw.config.get('wgPageName') + '".');
+		return;
+	}
+	if (AFCH.matchtemplate.new(html) !== ''){
+		return true;
+	}
+	return false;
+}
+
+AFCH.cleartext = function ( title, post ) {
+	var text = AFCH.getPageText(title),
+	html = AFCH.getPageHtml(title),
+    commentRegex,
+	commentsToRemove = [
+		'请不要移除这一行代码',
+		'請勿刪除此行，並由下一行開始編輯',
+		'請勿任意刪除以上代碼，並由下一行開始編輯',
+		'Please leave this line alone!',
+		'Important, do not remove this line before (template|article) has been created.',
+		'Just press the "Save page" button below without changing anything! Doing so will submit your article submission for review. ' + 'Once you have saved this page you will find a new yellow \'Review waiting\' box at the bottom of your submission page. ' + 'If you have submitted your page previously,(?: either)? the old pink \'Submission declined\' template or the old grey ' + '\'Draft\' template will still appear at the top of your submission page, but you should ignore (them|it). Again, please ' + 'don\'t change anything in this text box. Just press the \"Save page\" button below.'
+		];
+	commentRegex = new RegExp( '<!-{2,}\\s*(' + commentsToRemove.join( '|' ) + ')\\s*-{2,}>', 'gi' );
+	text = text.replace( commentRegex, '' )
+		.replace( "'''此处改为条目主题'''是一个", '' )
+		//.replace( /== Request review at \[\[WP:AFC\]\] ==/gi, '' )
+		// Remove sandbox templates
+		.replace( /\{\{(userspacedraft|userspace draft|user sandbox|用戶沙盒|用户沙盒|draft copyvio|七日草稿|7D draft|Draft|草稿|Please leave this line alone \(sandbox heading\))(?:\{\{[^{}]*\}\}|[^}{])*\}\}/ig, '' )
+		// Remove spaces/commas between <ref> tags
+		.replace( /\s*(<\/\s*ref\s*\>)\s*[,]*\s*(<\s*ref\s*(name\s*=|group\s*=)*\s*[^\/]*>)[ \t]*$/gim, '$1$2' )
+		// Remove whitespace before <ref> tags
+		.replace( /[ \t]*(<\s*ref\s*(name\s*=|group\s*=)*\s*.*[^\/]+>)[ \t]*$/gim, '$1' )
+		// Move punctuation before <ref> tags
+		.replace( /\s*((<\s*ref\s*(name\s*=|group\s*=)*\s*.*[\/]{1}>)|(<\s*ref\s*(name\s*=|group\s*=)*\s*[^\/]*>(?:<[^<\>]*\>|[^><])*<\/\s*ref\s*\>))[ \t]*([.!?,;:])+$/gim, '$6$1' )
+		// Replace {' + '{http://example.com/foo}' + '} with "* http://example.com/foo" (common newbie error)
+		.replace( /\n\{\{(http[s]?|ftp[s]?|irc|gopher|telnet)\:\/\/(.*?)\}\}/gi, '\n* [$1://$3 $1://$3]' )
+		.replace( /<(\/|)[Bb][Rr](\/|)>/, '<br />' )
+		.replace( /<(\/|)[Hh][Rr](\/|)>/, '<hr />' )
+		.replace( /\n\n\n\n/, '\n\n\n\n' )
+		.replace( /\n\n\n\n/, '\n\n\n\n' )
+		.replace( /\[\[([Cc]at|CAT|[Cc]ategory|CATEGORY|分[类類]):/gi, '[[:Category:' )
+		.replace( /\[\[([Cc]at|CAT|[Cc]ategory|CATEGORY|分[类類]):/gi, '[[:Category:' )
+		.replace( /\[\[([Cc]at|CAT|[Cc]ategory|CATEGORY|分[类類]):/gi, '[[:Category:' )
+		.replace(/\[\[:([Cc]at|CAT|[Cc]ategory|CATEGORY|分[类類]):使用创建条目精灵建立的页面\]\]/,'')
+		.replace(/\[\[:([Cc]at|CAT|[Cc]ategory|CATEGORY|分[类類]):用条目向导创建的草稿\]\]/,'')
+		// Remove html comments (<!--) that surround categories
+		.replace( /<!--\s*((\[\[:(Category:.*?)\]\])+)\s*-->/gi, '$1' );
+	var cagetory = {}
+	cagetory.link = text.match( /\[\[:Category:(.*)\]\]/ )
+	cagetory.box = text.match( /{{AFC_submission\/CategoryBox\n(.*)}}/ )
+	cagetory.inbox = cagetory.box[1].match( /\|(.*)(\n){0,1}/ )
+	var cagetories = ''
+	if ( post ) {
+		for ( var i=1, cagetory.link[i] !== null, i++ ) {
+			cagetories += '[[Category:' + cagetory[i] + ']]\n'
+		}
+		for ( var i=1, cagetory.inbox[i] !== null, i++ ) {
+			cagetories += '[[Category:' + cagetory[i] + ']]\n'
+		}
+	} else {
+		cagetories = '{{AFC submission/CategoryBox\n'
+		for ( var i=1, cagetory.link[i] !== null, i++ ) {
+			cagetories += '|' + cagetory[i] + '\n'
+		}
+		for ( var i=1, cagetory.inbox[i] !== null, i++ ) {
+			cagetories += '|' + cagetory[i] + '\n'
+		}
+		cagetories += '}}'
+	}
+	text = text.replace( /\[\[:Category:(.*)\]\]/, '' )
+		.replace( /{{AFC_submission\/CategoryBox\n(.*)}}/, '' );
+	
+			
+	// Convert http://-style links to other wikipages to wikicode syntax
+	// FIXME: Break this out into its own core function? Will it be used elsewhere?
+	function convertExternalLinksToWikilinks( text ) {
+		var linkRegex = /\[{1,2}(?:https?:)?\/\/(?:zh.wikipedia.org\/(wiki|zh|zh-hans|zh-hant|zh-cn|zh-my|zh-sg|zh-tw|zh-hk|zh-mo)\/|zhwp.org\/((wiki|zh|zh-hans|zh-hant|zh-cn|zh-my|zh-sg|zh-tw|zh-hk|zh-mo)\/|(?!w)))([^\s\|\]\[]+)(?:\s|\|)?((?:\[\[[^\[\]]*\]\]|[^\]\[])*)\]{1,2}/ig,
+			linkMatch = linkRegex.exec( text ),
+			title, displayTitle, newLink;
+
+		while ( linkMatch ) {
+			title = decodeURI( linkMatch[ 4 ] ).replace( /_/g, ' ' );
+			displayTitle = decodeURI( linkMatch[ 5 ] ).replace( /_/g, ' ' );
+
+				// Don't include the displayTitle if it is equal to the title
+			if ( displayTitle && title !== displayTitle ) {
+				newLink = '[[' + title + '|' + displayTitle + ']]';
+			} else {
+				newLink = '[[' + title + ']]';
+			}
+
+			text = text.replace( linkMatch[ 0 ], newLink );
+			linkMatch = linkRegex.exec( text );
+		}
+
+		return text;
+	}
+	text = convertExternalLinksToWikilinks( text );
+	text = text
+		.replace( /(?:[\t ]*(?:\r?\n|\r)){3,}/ig, '\n\n' )
+		.replace( /^\s*/, '' )
+		.replace( /{{AFC_submission\|(.*)}}/, '' )
+		.replace( /{{AFC_comment\|(.*)}}/, '' )
+		.replace( '<hr />', '' )
+		.replace( /\n\n/, '\n' )
+		.replace( /\n\n/, '\n' );
+	if ( !post ){
+		text = AFCH.matchtemplate.pending(html) + AFCH.matchtemplate.declined(html) + AFCH.matchtemplate.comment(html) + '<!-- 請勿任意刪除以上代碼，並由下一行開始編輯 -->\n' + text + cagetories
+	}
+	return text;
+}
+	
+AFCH.matchtemplate = {}
+	
+AFCH.matchtemplate.pending = function (html) {
+	var data = html.match(/<template:Template:AFC_submission>\|(.*)<\/template>/ );
+						//<template:Template:AFC_submission>| ...  </template>
+						//{{AFC_submission||...}}
+	if (data[1]){
+		var wt = data[1] + '\n';
+	}
+	return wt || ''
+}
+
+AFCH.matchtemplate.new = AFCH.matchtemplate.pending
+	
+AFCH.matchtemplate.declined = function (html) {
+	var data = html.match(/<template:Template:AFC_submission>d\|(.*)<\/template>/ );
+						//<template:Template:AFC_submission>d| ...  </template>
+						//{{AFC_submission|d|...}}
+	var wt = '';
+	for ( var i=1, data[i] !== null, i++ ) {
+		wt += data[i].replace( '&lt;', '<' ).replace( '&gt;', '>' ) + '\n';
+	}
+	return wt
+}
+	
+AFCH.matchtemplate.comment = function (html) {
+	var data = html.match(/<template:Template:AFC_comment>1=(.*)<\/template>/ );
+						//<template:Template:AFC_comment>1= ...  </template>
+						//{{AFC_comment|1=...}}
+	var wt = '';
+	for ( var i=1, data[i] !== null, i++ ) {
+		wt += data[i].replace( '&lt;', '<' ).replace( '&gt;', '>' ) + '\n';
+	}
+	if ( wt !== '' ) {
+		wt += '<hr />'
+	}
+	return wt;
 }
 
 AFCH.initCallbacks = [];
@@ -640,11 +643,6 @@ AFCH.load = function () {
 	Morebits.wiki.api.setApiUserAgent('AFCH~zh~/2.0 (' + mw.config.get('wgDBname') + ')');
 
 	// Load all the modules in the order that the tabs should appear
-	var afchModules = [
-		'clear',
-		//附帶功能：速刪
-		'speedy',
-	];
 	var disabledModules = AFCH.getPref('disabledModules').concat();
 	afchModules.filter(function(mod) {
 		return disabledModules.indexOf(mod) === -1;
@@ -676,6 +674,168 @@ AFCH.load = function () {
 		mw.util.addCSS('.morebits-dialog-content, .morebits-dialog-footerlinks { font-size: 100% !important; } ' +
 			'.morebits-dialog input, .morebits-dialog select, .morebits-dialog-content button { font-size: inherit !important; }');
 	}
+};
+
+/** AFCH.getPageText / AFCH.getPageHtml **/
+//https://github.com/WPAFC/afch-rewrite/blob/0594efad9d5337f6c1418509ad55e9fc3210fca1/src/modules/core.js#L513
+AFCH.getPageText = function (pagename) {
+	new mw.Api().get({
+		action: 'query',
+		prop: 'revisions',
+		format: 'json',
+		indexpageids: true,
+		titles: (pagename || mw.config.get('wgPageName'))
+	})
+		.done( function ( data ) {
+			var rev, id = data.query.pageids[ 0 ];
+			if ( id && data.query.pages ) {
+				// The page might not exist; resolve with an empty string
+				if ( id === '-1' ) {
+					console.error(`AFCH error:Title "${ pagename }" might not exist.
+[type = AFCH.getPageText,
+code = new mw.Api().get({
+		action: 'query',
+		prop: 'revisions',
+		format: 'json',
+		indexpageids: true,
+		titles: '${ pagename }'
+})
+]`);
+				}
+				
+				rev = data.query.pages[ id ].revisions[ 0 ];
+				var text =  rev[ '*' ];
+			} else if (data.error.info) {
+				console.error(`AFCH error:Get a error which is "${ data.error.info }" while AFCH getting title "${ pagename }".
+[type = AFCH.getPageText,
+code = new mw.Api().get({
+		action: 'query',
+		prop: 'revisions',
+		format: 'json',
+		indexpageids: true,
+		titles: '${ pagename }'
+})
+]`);
+			} else {
+				console.error( 'AFCH error: Get unknow error(While getting ' + pagename + ')');
+				console.error(`AFCH error:Get a unknow error while AFCH getting title "${ pagename }".
+[type = AFCH.getPageText,
+code = new mw.Api().get({
+		action: 'query',
+		prop: 'revisions',
+		format: 'json',
+		indexpageids: true,
+		titles: '${ pagename }'
+})
+]`);
+			}
+		} )
+		.fail( function ( err ) {
+			console.error(`AFCH error:Get a error which is "${ err }" while AFCH getting title "${ pagename }".
+[type = AFCH.getPageText,
+code = new mw.Api().get({
+		action: 'query',
+		prop: 'revisions',
+		format: 'json',
+		indexpageids: true,
+		titles: '${ pagename }'
+})
+]`);
+		} );
+
+		if (text){
+			return text
+		} else {
+			return null
+		}
+};
+	
+AFCH.getPageHtml = function (pagename) {
+	new mw.Api().get({
+		action: 'parse',
+		format: 'json',
+		titles: (pagename || mw.config.get('wgPageName')),
+		prop: 'text|parsewarnings',
+		wrapoutputclass: '',
+		pst: '1',
+		disablelimitreport: '1',
+		disableeditsection: '1',
+		disabletoc: '1'
+	})
+		.done( function ( data ) {
+			var rev, id = data.parse.pageids[ 0 ];
+			if ( id ) {
+				// The page might not exist; resolve with an empty string
+				if ( id === '-1' ) {
+					console.error(`AFCH error:Title "${ pagename }" might not exist.
+[type = AFCH.getPageHtml,
+code = new mw.Api().get({
+	action: 'parse',
+	format: 'json',
+	titles: ${ pagename },
+	prop: 'text|parsewarnings',
+	wrapoutputclass: '',
+	pst: '1',
+	disablelimitreport: '1',
+	disableeditsection: '1',
+	disabletoc: '1'
+})
+]`);
+				}
+				var html =  data.parse.text;
+			} else if (data.parsewarnings[0]) {
+				console.error(`AFCH error:Get a error which is "${ data.parsewarnings[0] }" while AFCH getting title "${ pagename }" html.
+[type = AFCH.getPageHtml,
+code = new mw.Api().get({
+	action: 'parse',
+	format: 'json',
+	titles: ${ pagename },
+	prop: 'text|parsewarnings',
+	wrapoutputclass: '',
+	pst: '1',
+	disablelimitreport: '1',
+	disableeditsection: '1',
+	disabletoc: '1'
+})
+]`);
+			} else {
+console.error(`AFCH error:Get a unknow error while AFCH getting title "${ pagename }" html.
+[type = AFCH.getPageHtml,
+code = new mw.Api().get({
+	action: 'parse',
+	format: 'json',
+	titles: ${ pagename },
+	prop: 'text|parsewarnings',
+	wrapoutputclass: '',
+	pst: '1',
+	disablelimitreport: '1',
+	disableeditsection: '1',
+	disabletoc: '1'
+})
+]`);
+			}
+		} )
+		.fail( function ( err ) {
+		console.error(`AFCH error:Get a error which is "${ err }" while AFCH getting title "${ pagename }" html.
+[type = AFCH.getPageHtml,
+code = new mw.Api().get({
+	action: 'parse',
+	format: 'json',
+	titles: ${ pagename },
+	prop: 'text|parsewarnings',
+	wrapoutputclass: '',
+	pst: '1',
+	disablelimitreport: '1',
+	disableeditsection: '1',
+	disabletoc: '1'
+})
+]`);
+		} );
+		if (text){
+			return decodeURI(html).replace( '&lt;', '<' ).replace( '&gt;', '>' )
+		} else {
+			return null
+		}
 };
 
 }(window, document, jQuery)); // End wrap with anonymous function
