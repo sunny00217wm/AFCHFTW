@@ -4,7 +4,7 @@ AFCHFTW WikiProject_Articles_for_creation's Helper_script from Twinkle (zhwiki)
 
 License
 ==
-此版本以GNU General Public License v3.0授權
+此版本以GNU General Public License v3.0　+ CC-BY-SA-3.0授權
 
 [94rain/afch-zhwp]: https://github.com/94rain/afch-zhwp
 [Xi-Plus/twinkle]: https://github.com/Xi-Plus/twinkle
