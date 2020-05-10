@@ -286,10 +286,97 @@ var AFCH = {}
 		//return text
 	}
 		
-	self.matchtemplate = {}
+	self.template = {}
+	
+	self.template.getTemplates = function () {
+		var $templateDom, templates = [],
+			
+		self.getPageHtml().done(function () {
+			$templateDom.children( 'template' ).each( function () {
+				var $el = $( this ),
+					data = {
+						target: $el.children( 'title' ).text(),
+						params: {}
+					};
+		
+				/**
+				 * Essentially, this function takes a template value DOM object, $v,
+				 * and removes all signs of XML-ishness. It does this by manipulating
+				 * the raw text and doing a few choice string replacements to change
+				 * the templates to use wikicode syntax instead. Rather than messing
+				 * with recursion and all that mess, /g is our friend...which is pefectly
+				 * satisfactory for our purposes.
+				 */
+				function parseValue( $v ) {
+					var text = $( '<div>' ).append( $v ).html();
+
+					// Convert templates to look more template-y
+					text = text.replace( /<template>/g, '{{' );
+					text = text.replace( /<\/template>/g, '}}' );
+					text = text.replace( /<part>/g, '|' );
+
+					// Expand embedded tags (like <nowiki>)
+					text = text.replace( new RegExp( '<ext><name>(.*?)<\\/name>(?:<attr>.*?<\\/attr>)*' +
+						'<inner>(.*?)<\\/inner><close>(.*?)<\\/close><\\/ext>', 'g' ), '&lt;$1&gt;$2$3' );
+
+					// Now convert it back to text, removing all the rest of the XML tags
+					return $( text ).text();
+				}
+
+				$el.children( 'part' ).each( function () {
+					var $part = $( this ),
+					$name = $part.children( 'name' ),
+					// Use the name if set, or fall back to index if implicitly numbered
+					name = $.trim( $name.text() || $name.attr( 'index' ) ),
+					value = $.trim( parseValue( $part.children( 'value' ) ) );
+					
+					data.params[ name ] = value;
+				} );
+
+				templates.push( data );
+			} );
+
+			deferred.resolve( templates );
+		} );
+
+		return deferred;
+	};
+	
+	self.template.tomatch = function ( templates ) {
+		// Represent each AfC submission template as an object.
+		var submissionTemplates = [],
+			commentTemplates = [];
+		
+		function getAndDelete ( object, key ) {
+			var v = object[ key ];
+			delete object[ key ];
+			return v;
+		}
+
+		$.each( templates, function ( _, template ) {
+			var name = template.target.toLowerCase();
+			if ( name === 'afc submission' ) {
+				submissionTemplates.push( {
+					status: ( getAndDelete( template.params, '1' ) || '' ).toLowerCase(),
+					timestamp: getAndDelete( template.params, 'ts' ) || '',
+					params: template.params
+				} );
+			} else if ( name === 'afc comment' ) {
+				commentTemplates.push( {
+					// If we can't find a timestamp, set it to unicorns, because everyone
+					// knows that unicorns always come first.
+					timestamp: self.parseForTimestamp( template.params[ '1' ], /* mwstyle */ true ) || 'unicorns',
+					text: template.params[ '1' ]
+				} );
+			}
+		} );
+
+		self.template.submission = submissionTemplates;
+		self.template.comments = commentTemplates;
+	};
 		
 	self.matchtemplate.pending = function () {
-		var html = self..html
+		var html = self.html
 		var data = html.match(/\[template-data:Template:AFC_submission\|{{AFC_submission\|\|(.*)}}\]/ );
 							//[template-data:Template:AFC_submission|{{AFC_submission| ...  }}]</template>
 							//{{AFC_submission||...}}
@@ -617,20 +704,9 @@ var AFCH = {}
 		}
 	};
 	
+	
 	self.SetPageTextHtml = function (title) {
 		self.text = self.getPageText(title)
-		self.html = self.getPageHtml(title)
-	};
-	
-	
-	self.getPageText = function (title) {
-		new mw.Api().get({
-			action: 'query',
-			prop: 'revisions',
-			format: 'json',
-			indexpageids: true,
-			titles: ( title || mw.config.get('wgPageName') )
-		})
 			.done(function ( data ) {
 				var rev, id = data.query.pageids[ 0 ];
 				if ( id && data.query.pages ) {
@@ -655,20 +731,7 @@ var AFCH = {}
 			} else {
 				return null
 			}
-	};
-		
-	self.getPageHtml = function (title) {
-		new mw.Api().get({
-			action: 'parse',
-			format: 'json',
-			titles: ( title || mw.config.get('wgPageName')),
-			prop: 'text|parsewarnings',
-			wrapoutputclass: '',
-			pst: '1',
-			disablelimitreport: '1',
-			disableeditsection: '1',
-			disabletoc: '1'
-		})
+		self.html = self.getPageHtml(title)
 			.done( function ( data ) {
 				var rev, id = data.parse.pageids[ 0 ];
 				if ( id ) {
@@ -691,6 +754,55 @@ var AFCH = {}
 			} else {
 				return null
 			}
+	};
+	
+	
+	self.getPageText = function (title, options) {
+		var request = {
+			action: 'query',
+			prop: 'revisions',
+			format: 'json',
+			indexpageids: true,
+			titles: ( title || mw.config.get('wgPageName') )
+		}
+		$.extend( request, options.moreParameters || {} );
+		new self.Api().get(request)
+			.done( function ( data ) {
+						var rev, id = data.query.pageids[ 0 ];
+						if ( id && data.query.pages ) {
+							// The page might not exist; resolve with an empty string
+							if ( id === '-1' ) {
+								deferred.resolve( '', {} );
+								return;
+							}
+
+							rev = data.query.pages[ id ].revisions[ 0 ];
+							deferred.resolve( rev[ '*' ], rev );
+							status.update( '已获取$1' );
+						} else {
+							deferred.reject( data );
+							// FIXME: get detailed error info from API result
+							status.update( '获取$1失败: ' + JSON.stringify( data ) );
+						}
+					} )
+					.fail( function ( err ) {
+						deferred.reject( err );
+						status.update( '无法获取$1: ' + JSON.stringify( err ) );
+					} );
+	};
+		
+	self.getPageHtml = function (title) {
+		new mw.Api().get({
+			action: 'parse',
+			format: 'json',
+			titles: ( title || mw.config.get('wgPageName')),
+			prop: 'text|parsewarnings',
+			wrapoutputclass: '',
+			pst: '1',
+			disablelimitreport: '1',
+			disableeditsection: '1',
+			disabletoc: '1'
+		})
 	};
 	
 }(AFCH)); 
