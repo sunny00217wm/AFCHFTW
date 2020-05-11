@@ -4,7 +4,7 @@ AFCH.clear = function () {
 		return;
 	}
 
-	AFCH.addPortletLink(AFCH.clear.callback, AFCH.NameOfModule('clear'), 'afch-clear', wgULS('快速提交草稿', '快速提交草稿'));
+	AFCH.addPortletLink(AFCH.clear.callback, AFCH.NameOfModule('clear'), 'afch-clear', wgULS('进行维护清理', '進行維護清理'));
 };
  
 AFCH.clear.callback = function (){
