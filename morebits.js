@@ -4850,24 +4850,24 @@ var Morebits = AFCH.Morebits || {};
 	 * @param {number} height  The maximum allowable height for the content area.
 	 * @param {string} boxclass  補：插入框class
 	 */
-	self.simpleWindow = function SimpleWindow(width, height, boxclass) {
+	self.simpleWindow = function SimpleWindow(boxclass) {
 		var content = document.createElement('div');
 		this.content = content;
 		content.className = 'morebits-dialog-content ' + (boxclass||'');
 		content.id = 'morebits-dialog-content-' + Math.round(Math.random() * 1e15);
 	
-		this.height = height;
+		this.height = AFCH.getPref('WindowHeight');
 	
 		$(this.content).dialog({
 			autoOpen: false,
 			buttons: { '占位按钮': function() {} },
 			dialogClass: 'morebits-dialog',
-			width: Math.min(parseInt(window.innerWidth, 10), parseInt(width ? width : 800, 10)),
+			width: Math.min(parseInt(window.innerWidth, 10), parseInt(AFCH.getPref('WindowWidth') ? AFCH.getPref('WindowWidth') : 800, 10)),
 			// give jQuery the given height value (which represents the anticipated height of the dialog) here, so
 			// it can position the dialog appropriately
 			// the 20 pixels represents adjustment for the extra height of the jQuery dialog "chrome", compared
 			// to that of the old SimpleWindow
-			height: height + 20,
+			height: AFCH.getPref('WindowHeight') + 20,
 			close: function(event) {
 				// dialogs and their content can be destroyed once closed
 				$(event.target).dialog('destroy').remove();
