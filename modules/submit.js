@@ -13,13 +13,14 @@ AFCH.submit.callback = function submitCallback() {
 };
   
 AFCH.submit.callback.initDialog = function submitinitDialog (callbackfunc){
+	///改start
   var dialog;
-  AFCH.clear.dialog = new Morebits.simpleWindow(AFCH.getPref('speedyWindowWidth'), AFCH.getPref('speedyWindowHeight'));
+  AFCH.clear.dialog = new AFCH.SimpleWindow(AFCH.getPref('WindowWidth'), AFCH.getPref('WindowHeight'), AFCH.windowclass('clear'));
   dialog = AFCH.clear.dialog;
   dialog.setTitle(wgULS('进行维护清理', '進行維護清理'));
   dialog.setScriptName('AFCH');
   dialog.addFooterLink('AFCH', 'Wikipedia:建立條目專題/協助腳本');
-  var form = new Morebits.quickForm(callbackfunc, AFCH.getPref('speedySelectionStyle') === 'radioClick' ? 'change' : null);
+  var form = new AFCH.Morebits.quickForm(callbackfunc, AFCH.getPref('speedySelectionStyle') === 'radioClick' ? 'change' : null);
 	
 	var tagOptions = form.append({
 		type: 'div',
@@ -52,27 +53,28 @@ AFCH.submit.callback.initDialog = function submitinitDialog (callbackfunc){
 			])
 		}
   **/
-  var result = form.render();
+	//end
+  	var result = form.render();
+	var pageobj = AFCH.Wikipedia.api;
   
-  var statelem = pageobj.getStatusElement();
+	var statelem = pageobj.getStatusElement();
   
-  statelem.status(wgULS('检查页面是否需更改...', '檢查頁面是否需變更...'));
+	statelem.status(wgULS('检查页面是否需更改...', '檢查頁面是否需變更...'));
 
-  var text = pageobj.getPageText();
-  if (text) {
-    text = AFCH.clear(text);
-    if (text == pageobj.getPageText()) {
-      statelem.error(wgULS('清理结果前后相同，未更改。', '清理結果前後相同，未變更。'));
-      return;
-    }
-    pageobj.setPageText(text);
-    pageobj.setEditSummary('維護清理草稿[[:' + mw.config.get('wgPageName') + ']]' + AFCH.getPref('summaryAd'));
-    pageobj.setWatchlist(params.watch);
-    Morebits.wiki.actionCompleted.redirect = mw.config.get('wgPageName');
-    Morebits.wiki.actionCompleted.notice = wgULS('清理完成', '清理完成');
-  } else {
-    statelem.error(wgULS('抓取页面内容失败。', '抓取頁面內容失敗。'));
-  }
+	AFCH.text = new AFCH.cleantext(pageobj.getPageText());
+	
+	if (AFCH.text.get) {
+		if (AFCH.text.before == AFCH.text.after) {
+			statelem.error(wgULS('清理结果前后相同，未更改。', '清理結果前後相同，未變更。'));
+			return;
+		}
+		pageobj.setPageText();
+		pageobj.setEditSummary('維護清理草稿[[:' + mw.config.get('wgPageName') + ']]');
+    		//pageobj.setWatchlist(params.watch);
+    		AFCH.Wikipedia.actionCompleted.notice = wgULS('清理完成', '清理完成') + '$diff';
+	} else {
+		statelem.error(wgULS('抓取页面内容失败。', '抓取頁面內容失敗。'));
+	}
 }
   
 AFCH.submit.getParameters = function submitGetParameters(form, values) {
