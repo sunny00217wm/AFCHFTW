@@ -5,12 +5,16 @@
  * A library full of lots of goodness for user scripts on MediaWiki wikis, including Wikipedia.
  *
  * The highlights include:
- *   - Morebits.quickForm class - generates quick HTML forms on the fly
- *   - Morebits.wiki.api class - makes calls to the MediaWiki API
- *   - Morebits.wiki.page class - modifies pages on the wiki (edit, revert, delete, etc.)
- *   - Morebits.wikitext class - contains some utilities for dealing with wikitext
- *   - Morebits.status class - a rough-and-ready status message displayer, used by the Morebits.wiki classes
- *   - Morebits.simpleWindow class - a wrapper for jQuery UI Dialog with a custom look and extra features
+ *   - AFCH.Morebits.quickForm class - generates quick HTML forms on the fly
+ *   - AFCH.Morebits.wiki.api class - makes calls to the MediaWiki API
+ *   - AFCH.Morebits.wiki.page class - modifies pages on the wiki (edit, revert, delete, etc.)
+ *   - AFCH.Morebits.wiki.flow - 添加結構式討論和編輯描述
+ *   - AFCH.Morebits.api - 和 https://github.com/94rain/afch-zhwp/blob/zhwp/src/modules/core.js 混和的 MediaWiki API 調用法
+ *   - AFCH.Morebits.api.page - {{同上}}，{{同上|3}}
+ *   - AFCH.Morebits.api.Structured_Discussions - {{同上|2}}，{{同上|3}}
+ *   - AFCH.Morebits.wikitext class - contains some utilities for dealing with wikitext
+ *   - AFCH.Morebits.status class - a rough-and-ready status message displayer, used by the Morebits.wiki classes
+ *   - AFCH.Morebits.simpleWindow class - a wrapper for jQuery UI Dialog with a custom look and extra features
  *
  * Dependencies:
  *   - The whole thing relies on jQuery.  But most wikis should provide this by default.
@@ -3664,11 +3668,7 @@ var Morebits = AFCH.Morebits || {};
 	 * - Need to reset current action before the save?
 	 * - Deal with action.completed stuff
 	 * - Need to reset all parameters once done (e.g. edit summary, move destination, etc.)
-	 */
-	
-	//別名重定向 加在最後，確保所有都傳進去
-	self.wikipedia = self.wiki;
-	
+	 */	
 	
 	/**
 	 * **************** AFCH.Morebits.wiki.flow ****************
@@ -4104,7 +4104,167 @@ var Morebits = AFCH.Morebits || {};
 		};
 	};
 	
+	/**
+	 * **************** AFCH.Morebits.wiki2 ****************
+	 * Various objects for wiki editing and API access
+	 */
+	//先繼承AFCH.Morebits.wiki這樣有些就不用再打一遍XD
+	self.wiki2 = self.wiki;
 	
+	/**
+	 * ***************** AFCH.Morebits.wiki2.api ****************
+	 * 改自https://github.com/94rain/afch-zhwp/blob/zhwp/src/modules/core.js
+	 * ============
+	 * @param {Object} query - 請求內容
+	 * 其他由下面的函式或...自己想辦法
+	 * 為了避免汙染，改以that（self.wiki2.apiquery）傳遞
+	 */
+	self.wiki2.apiquery = {}
+	var that = self.wiki2.apiquery
+	
+	self.wiki2.api = function(query) {
+		var req = {}, err = []
+		query.token = query.token || mw.user.tokens.get('csrfToken')
+		$.ajax({
+			data: query,
+			type: 'POST',
+			url: mw.util.wikiScript('api'),
+			dataType: 'json',
+			headers: {
+				'Api-User-Agent': morebitsWikiApiUserAgent
+			},
+			success: function(data) {
+				err = data.error ? [data.error.code, data.error.info] : []
+				req = data
+			},
+			error: function(err) {
+				err = err ? err : []
+			}
+		});
+		return {
+			req: req,
+			err: err
+		}
+	};
+	
+	self.wiki.api.prototype = {
+		currentAction: '',
+		onSuccess: null,
+		onError: null,
+		parent: window,  // use global context if there is no parent object
+		query: null,
+		response: null,
+		responseXML: null,  // use `response` instead; retained for backwards compatibility
+		setParent: function(parent) {
+			that.parent = parent;
+		},  // keep track of parent object for callbacks
+		statelem: null,  // this non-standard name kept for backwards compatibility
+		statusText: null, // result received from the API, normally "success" or "error"
+		errorCode: null, // short text error code, if any, as documented in the MediaWiki API
+		errorText: null, // full error description, if any
+	
+		/**
+		 * Carries out the request.
+		 * @param {Object} callerAjaxParameters Do not specify a parameter unless you really
+		 * really want to give jQuery some extra parameters
+		 */
+		post: function(query) {
+			
+	
+			//++self.wiki2.numberOfActionsLeft;
+
+	
+			var ajaxparams = $.extend({}, {
+				context: this,
+				type: 'POST',
+				url: mw.util.wikiScript('api'),
+				data: queryString,
+				dataType: 'xml',
+				headers: {
+					'Api-User-Agent': morebitsWikiApiUserAgent
+				}
+			}, callerAjaxParameters);
+	
+			return $.ajax(ajaxparams).done(
+				function(response, statusText) {
+					this.statusText = statusText;
+					this.response = this.responseXML = response;
+					if (this.query.format === 'json') {
+						this.errorCode = response.error && response.error.code;
+						this.errorText = response.error && response.error.info;
+					} else {
+						this.errorCode = $(response).find('error').attr('code');
+						this.errorText = $(response).find('error').attr('info');
+					}
+	
+					if (typeof this.errorCode === 'string') {
+	
+						// the API didn't like what we told it, e.g., bad edit token or an error creating a page
+						this.returnError();
+						return;
+					}
+	
+					// invoke success callback if one was supplied
+					if (this.onSuccess) {
+	
+						// set the callback context to this.parent for new code and supply the API object
+						// as the first argument to the callback (for legacy code)
+						this.onSuccess.call(this.parent, this);
+					} else {
+						this.statelem.info('完成');
+					}
+	
+					self.wiki.actionCompleted();
+				}
+			).fail(
+				// only network and server errors reach here - complaints from the API itself are caught in success()
+				function(jqXHR, statusText, errorThrown) {
+					this.statusText = statusText;
+					this.errorThrown = errorThrown; // frequently undefined
+					this.errorText = statusText + wgULS('在调用API时发生了错误“', '在存取API時發生了錯誤「') + jqXHR.statusText + wgULS('”。', '」。');
+					this.returnError();
+				}
+			);  // the return value should be ignored, unless using callerAjaxParameters with |async: false|
+		},
+	
+		returnError: function() {
+			if (this.errorCode === 'badtoken') {
+				this.statelem.error(wgULS('无效令牌，请刷新页面并重试', '無效權杖，請重新整理頁面並重試'));
+			} else {
+				this.statelem.error(this.errorText);
+			}
+	
+			// invoke failure callback if one was supplied
+			if (this.onError) {
+	
+				// set the callback context to this.parent for new code and supply the API object
+				// as the first argument to the callback for legacy code
+				this.onError.call(this.parent, this);
+			}
+			// don't complete the action so that the error remains displayed
+		},
+	
+		getStatusElement: function() {
+			return this.statelem;
+		},
+	
+		getErrorCode: function() {
+			return this.errorCode;
+		},
+	
+		getErrorText: function() {
+			return this.errorText;
+		},
+	
+		getXML: function() { // retained for backwards compatibility, use getResponse() instead
+			return this.responseXML;
+		},
+	
+		getResponse: function() {
+			return this.response;
+		}
+	
+	};
 	
 	/**
 	 * **************** AFCH.Morebits.wikitext ****************
